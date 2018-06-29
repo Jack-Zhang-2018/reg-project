@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :edit, :update, :destroy]
+  before_action :set_user, only: [:show, :edit, :update, :destroy, :account]
 
   # GET /users
   # GET /users.json
@@ -26,8 +26,12 @@ class UsersController < ApplicationController
   def create
     @user = User.new(user_params)
 
+    cookies[:username] = @user.username
+    cookies[:password] = @user.password
+
     respond_to do |format|
       if @user.save
+        cookies[:id] = @user.id
         format.html { redirect_to @user, notice: 'User was successfully created.' }
         format.json { render :show, status: :created, location: @user }
       else
@@ -60,6 +64,23 @@ class UsersController < ApplicationController
       format.json { head :no_content }
     end
   end
+
+  def login
+    if !params.has_key?(:password) || params[:password].strip.empty? ||
+      !params.has_key?(:username) || params[:username].strip.empty?
+
+    elsif cookies[:password] == params[:password] && cookies[:username] == params[:username]
+      @error = "Enter your information"
+      redirect_to "/account/#{cookies[:id]}"
+    else
+      @error = "You are wrong"
+      # redirect_to '/login'
+    end
+  end
+
+  def account
+  end
+
 
   private
     # Use callbacks to share common setup or constraints between actions.
